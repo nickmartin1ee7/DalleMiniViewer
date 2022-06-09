@@ -1,0 +1,47 @@
+﻿<Window x:Class="DalleMiniViewer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DalleMiniViewer"
+        mc:Ignorable="d"
+        Title="DALL-E Mini Viewer" Height="450" Width="305">
+
+    <Window.DataContext>
+        <local:MainWindowViewModel />
+    </Window.DataContext>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" /> <!--Header area-->
+            <RowDefinition Height="*" /> <!--Image area-->
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" /> <!--Prompt-->
+                <ColumnDefinition Width="Auto" /> <!--Button-->
+            </Grid.ColumnDefinitions>
+
+            <TextBox Grid.Column="0"
+                     Text="{Binding PromptText}"
+                       />
+            
+            <Button Grid.Column="1" 
+                    IsEnabled="{Binding PromptButtonEnabled}"
+                    Content="{Binding PromptButtonContent}"
+                    MinWidth="75"
+                    Command="{Binding PromptButton}"
+                    />
+        </Grid>
+
+        <ListBox Grid.Row="1"
+                 ItemsSource="{Binding ImageSources}" HorizontalAlignment="Left">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Image Source="{Binding}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</Window>
