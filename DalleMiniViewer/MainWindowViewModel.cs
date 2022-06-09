@@ -103,7 +103,7 @@ namespace DalleMiniViewer
                     }
                     else
                     {
-                        await Task.Delay(Random.Shared.Next(250, 501));
+                        await Task.Delay(Random.Shared.Next(500, 2_001));
                     }
                 }
 
