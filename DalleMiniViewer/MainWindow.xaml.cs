@@ -31,7 +31,7 @@ namespace DalleMiniViewer
 
         public void TextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            _vm?.ResetPromptArea();
+            _vm?.ResetPromptContent();
         }
 
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

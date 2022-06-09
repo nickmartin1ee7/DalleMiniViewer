@@ -22,7 +22,7 @@ namespace DalleMiniViewer
         private CancellationTokenSource? _cts;
         private string _promptText;
         private string _promptButtonContent;
-        private bool _promptTextBoxEnabled;
+        private bool _promptTextBoxEnabled = true;
 
         public bool PromptTextBoxEnabled
         {
@@ -48,7 +48,7 @@ namespace DalleMiniViewer
 
         public MainWindowViewModel()
         {
-            ResetPromptArea();
+            ResetPromptContent();
             _client.Timeout = TimeSpan.FromMinutes(5);
 
             PromptButton = new DelegatedCommand(async _ =>
@@ -69,7 +69,7 @@ namespace DalleMiniViewer
                     
                     while (!_cts.IsCancellationRequested)
                     {
-                        PromptButtonContent = _sw.Elapsed.ToString();
+                        PromptButtonContent = _sw.Elapsed.ToString("hh:mm:ss");
                         await Task.Delay(100);
                     }
                 });
@@ -109,6 +109,8 @@ namespace DalleMiniViewer
 
                 _sw.Stop();
 
+                PromptTextBoxEnabled = true;
+
                 if (response is null) return;
 
                 var stringContent = await response.Content.ReadAsStringAsync();
@@ -143,10 +145,9 @@ namespace DalleMiniViewer
             return false;
         }
 
-        public void ResetPromptArea()
+        public void ResetPromptContent()
         {
             PromptButtonContent = "Generate";
-            PromptTextBoxEnabled = true;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
