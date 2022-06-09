@@ -23,6 +23,7 @@ namespace DalleMiniViewer
         private string _promptText = string.Empty;
         private string _promptButtonContent = string.Empty;
         private bool _promptTextBoxEnabled = true;
+        private bool _cancelLastRequest;
 
         public bool PromptTextBoxEnabled
         {
@@ -43,7 +44,7 @@ namespace DalleMiniViewer
         }
 
         public ObservableCollection<BitmapImage> ImageSources { get; set; } = new();
-             
+
         public ICommand PromptButton { get; }
 
         public MainWindowViewModel()
@@ -57,6 +58,7 @@ namespace DalleMiniViewer
                 {
                     _cts.Cancel();
                     PromptButtonContent = "Cancelled";
+                    _cancelLastRequest = true;
                     return;
                 }
 
@@ -66,7 +68,7 @@ namespace DalleMiniViewer
                 _ = Task.Run(async () =>
                 {
                     PromptTextBoxEnabled = false;
-                    
+
                     while (!_cts.IsCancellationRequested)
                     {
                         PromptButtonContent = _sw.Elapsed.ToString("hh\\:mm\\:ss");
@@ -75,62 +77,68 @@ namespace DalleMiniViewer
                 });
 
                 _sw.Restart();
-
-                while (!_cts.IsCancellationRequested)
+                try
                 {
-                    try
+                    while (!_cts.IsCancellationRequested)
                     {
-                        response = await _client.PostAsync(GENERATE_ENDPOINT, new StringContent(@$"{{""prompt"":""{PromptText}""}}", Encoding.UTF8, "application/json"), _cts.Token);
+                        try
+                        {
+                            response = await _client.PostAsync(GENERATE_ENDPOINT, new StringContent(@$"{{""prompt"":""{PromptText}""}}", Encoding.UTF8, "application/json"), _cts.Token);
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            return;
+                        }
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            _cts.Cancel();
+                        }
+                        else if ((int)response.StatusCode == 429)
+                        {
+                            await Task.Delay(Random.Shared.Next(5_000, 10_001)); // 5-10s
+                        }
+                        else
+                        {
+                            await Task.Delay(Random.Shared.Next(500, 2_001));
+                        }
                     }
-                    catch (TaskCanceledException)
+
+                    _sw.Stop();
+
+                    PromptTextBoxEnabled = true;
+
+                    if (_cancelLastRequest || response is null)
                     {
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        _cts.Cancel();
-                        PromptText = $"Request Failed: {ex}";
+                        _cancelLastRequest = false;
                         return;
                     }
 
-                    if (response.IsSuccessStatusCode)
+                    var stringContent = await response.Content.ReadAsStringAsync();
+
+                    var imagePayload = JsonSerializer.Deserialize<ImagePayload>(stringContent, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+
+                    if (imagePayload is null) return;
+
+                    ImageSources.Clear();
+
+                    foreach (var b64Image in imagePayload.Images)
                     {
-                        _cts.Cancel();
-                    }
-                    else if ((int)response.StatusCode == 429)
-                    {
-                        await Task.Delay(Random.Shared.Next(5_000, 10_001)); // 5-10s
-                    }
-                    else
-                    {
-                        await Task.Delay(Random.Shared.Next(500, 2_001));
+                        byte[] imageBytes = Convert.FromBase64String(b64Image);
+
+                        var bitmap = new BitmapImage();
+                        bitmap.BeginInit();
+                        bitmap.StreamSource = new MemoryStream(imageBytes);
+                        bitmap.EndInit();
+
+                        ImageSources.Add(bitmap);
                     }
                 }
-
-                _sw.Stop();
-
-                PromptTextBoxEnabled = true;
-
-                if (response is null) return;
-
-                var stringContent = await response.Content.ReadAsStringAsync();
-
-                var imagePayload = JsonSerializer.Deserialize<ImagePayload>(stringContent, new JsonSerializerOptions(JsonSerializerDefaults.Web));
-
-                if (imagePayload is null) return;
-
-                ImageSources.Clear();
-
-                foreach (var b64Image in imagePayload.Images)
+                catch (Exception ex)
                 {
-                    byte[] imageBytes = Convert.FromBase64String(b64Image);
-
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.StreamSource = new MemoryStream(imageBytes);
-                    bitmap.EndInit();
-
-                    ImageSources.Add(bitmap);
+                    _cts.Cancel();
+                    PromptText = $"Request Failed: {ex}";
+                    return;
                 }
             });
         }
