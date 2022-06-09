@@ -21,7 +21,7 @@ jobs:
       run: dotnet restore
          
     - name: Publish
-      run: dotnet publish -c Release -r win-x64 --self-contained -p:PublishTrimmed=true -o publish
+      run: dotnet publish -c Release -r win-x64 --self-contained -o publish
       
     - name: GitHub Publish - Archive
       run: powershell Compress-Archive -Path publish\* -DestinationPath DalleMiniViewer.zip
