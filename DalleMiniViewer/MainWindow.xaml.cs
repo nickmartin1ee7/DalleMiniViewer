@@ -38,7 +38,7 @@ namespace DalleMiniViewer
         {
             var listBox = e.Source as ListBox;
 
-            if (listBox is null) return;
+            if (listBox is null || listBox.SelectedItem is null) return;
 
             Clipboard.SetImage(listBox.SelectedItem as BitmapSource);
         }
