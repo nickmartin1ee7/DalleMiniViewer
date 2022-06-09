@@ -38,7 +38,6 @@ jobs:
         tag_name: ${{ github.workflow }}
         name: Release v${{ github.run_number }}
         draft: false
-        prerelease: false
+        prerelease: true
         files:
-          DalleMiniViewer-Selfcontained.zip
-          DalleMiniViewer-Singlefile.zip
+          DalleMiniViewer*.zip
