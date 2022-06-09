@@ -24,11 +24,12 @@
             </Grid.ColumnDefinitions>
 
             <TextBox Grid.Column="0"
+                     IsEnabled="{Binding PromptTextBoxEnabled}"
                      Text="{Binding PromptText}"
-                       />
+                     TextChanged="TextBox_TextChanged"
+                     />
             
             <Button Grid.Column="1" 
-                    IsEnabled="{Binding PromptButtonEnabled}"
                     Content="{Binding PromptButtonContent}"
                     MinWidth="75"
                     Command="{Binding PromptButton}"
@@ -36,6 +37,7 @@
         </Grid>
 
         <ListBox Grid.Row="1"
+                 SelectionChanged="ListBox_SelectionChanged"
                  ItemsSource="{Binding ImageSources}" HorizontalAlignment="Left">
             <ListBox.ItemTemplate>
                 <DataTemplate>

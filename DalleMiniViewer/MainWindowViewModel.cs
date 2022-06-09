@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -22,15 +21,13 @@ namespace DalleMiniViewer
         private readonly Stopwatch _sw = new();
         private CancellationTokenSource? _cts;
         private string _promptText;
-        private bool _promptButtonEnabled = true;
-        private string _promptButtonContent = "Go";
+        private string _promptButtonContent;
+        private bool _promptTextBoxEnabled;
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public bool PromptButtonEnabled
+        public bool PromptTextBoxEnabled
         {
-            get => _promptButtonEnabled;
-            set => SetProperty(ref _promptButtonEnabled, value);
+            get => _promptTextBoxEnabled;
+            set => SetProperty(ref _promptTextBoxEnabled, value);
         }
 
         public string PromptButtonContent
@@ -46,29 +43,34 @@ namespace DalleMiniViewer
         }
 
         public ObservableCollection<BitmapImage> ImageSources { get; set; } = new();
-
+             
         public ICommand PromptButton { get; }
 
         public MainWindowViewModel()
         {
-            _client.Timeout = TimeSpan.FromMinutes(3);
+            ResetPromptArea();
+            _client.Timeout = TimeSpan.FromMinutes(5);
 
             PromptButton = new DelegatedCommand(async _ =>
             {
                 if (_cts is not null && !_cts.IsCancellationRequested)
                 {
                     _cts.Cancel();
+                    PromptButtonContent = "Cancelled";
+                    return;
                 }
 
                 _cts = new();
                 HttpResponseMessage? response = null;
 
-                var buttonTimeUpdaterTask = Task.Run(async () =>
+                _ = Task.Run(async () =>
                 {
+                    PromptTextBoxEnabled = false;
+                    
                     while (!_cts.IsCancellationRequested)
                     {
-                        await Task.Delay(100);
                         PromptButtonContent = _sw.Elapsed.ToString();
+                        await Task.Delay(100);
                     }
                 });
 
@@ -76,11 +78,28 @@ namespace DalleMiniViewer
 
                 while (!_cts.IsCancellationRequested)
                 {
-                    response = await _client.PostAsync(GENERATE_ENDPOINT, new StringContent(@$"{{""prompt"":""{PromptText}""}}", Encoding.UTF8, "application/json"), _cts.Token);
+                    try
+                    {
+                        response = await _client.PostAsync(GENERATE_ENDPOINT, new StringContent(@$"{{""prompt"":""{PromptText}""}}", Encoding.UTF8, "application/json"), _cts.Token);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        _cts.Cancel();
+                        PromptText = $"Request Failed: {ex}";
+                        return;
+                    }
 
                     if (response.IsSuccessStatusCode)
                     {
                         _cts.Cancel();
+                    }
+                    else if ((int)response.StatusCode == 429)
+                    {
+                        await Task.Delay(Random.Shared.Next(5_000, 10_001)); // 5-10s
                     }
                     else
                     {
@@ -123,5 +142,13 @@ namespace DalleMiniViewer
 
             return false;
         }
+
+        public void ResetPromptArea()
+        {
+            PromptButtonContent = "Generate";
+            PromptTextBoxEnabled = true;
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
     }
 }

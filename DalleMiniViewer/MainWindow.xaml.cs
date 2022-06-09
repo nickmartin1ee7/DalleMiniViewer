@@ -13,6 +13,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using Microsoft.Win32;
+
 namespace DalleMiniViewer
 {
     /// <summary>
@@ -20,9 +22,21 @@ namespace DalleMiniViewer
     /// </summary>
     public partial class MainWindow : Window
     {
+        private MainWindowViewModel? _vm => DataContext as MainWindowViewModel;
+
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        public void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _vm?.ResetPromptArea();
+        }
+
+        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Clipboard.SetImage(e.Source as BitmapSource);
         }
     }
 }
