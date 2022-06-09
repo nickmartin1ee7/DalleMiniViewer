@@ -36,7 +36,7 @@ namespace DalleMiniViewer
 
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Clipboard.SetImage((e.Source as ListBox).SelectedItem as BitmapSource);
+            Clipboard.SetImage((e.Source as ListBox)!.SelectedItem as BitmapSource);
         }
     }
 }

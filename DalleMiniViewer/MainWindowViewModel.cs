@@ -20,8 +20,8 @@ namespace DalleMiniViewer
         private readonly HttpClient _client = new();
         private readonly Stopwatch _sw = new();
         private CancellationTokenSource? _cts;
-        private string _promptText;
-        private string _promptButtonContent;
+        private string _promptText = string.Empty;
+        private string _promptButtonContent = string.Empty;
         private bool _promptTextBoxEnabled = true;
 
         public bool PromptTextBoxEnabled
@@ -119,6 +119,8 @@ namespace DalleMiniViewer
 
                 if (imagePayload is null) return;
 
+                ImageSources.Clear();
+
                 foreach (var b64Image in imagePayload.Images)
                 {
                     byte[] imageBytes = Convert.FromBase64String(b64Image);
@@ -133,7 +135,7 @@ namespace DalleMiniViewer
             });
         }
 
-        protected bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string propertyName = null)
+        protected bool SetProperty<T>(ref T field, T newValue, [CallerMemberName] string? propertyName = null)
         {
             if (!Equals(field, newValue))
             {
