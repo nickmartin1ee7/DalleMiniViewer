@@ -69,8 +69,8 @@ namespace DalleMiniViewer
                     
                     while (!_cts.IsCancellationRequested)
                     {
-                        PromptButtonContent = _sw.Elapsed.ToString("hh:mm:ss");
-                        await Task.Delay(100);
+                        PromptButtonContent = _sw.Elapsed.ToString("hh\\:mm\\:ss");
+                        await Task.Delay(500);
                     }
                 });
 
