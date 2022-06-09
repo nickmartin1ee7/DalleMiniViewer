@@ -38,7 +38,9 @@
 
         <ListBox Grid.Row="1"
                  SelectionChanged="ListBox_SelectionChanged"
-                 ItemsSource="{Binding ImageSources}" HorizontalAlignment="Stretch">
+                 ItemsSource="{Binding ImageSources}"
+                 HorizontalAlignment="Center"
+                 MinWidth="300">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Image Source="{Binding}" />
