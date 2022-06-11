@@ -59,6 +59,7 @@ namespace DalleMiniViewer
                     _cts.Cancel();
                     PromptButtonContent = "Cancelled";
                     _cancelLastRequest = true;
+                    PromptTextBoxEnabled = true;
                     return;
                 }
 
