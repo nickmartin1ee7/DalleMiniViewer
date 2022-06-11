@@ -20,11 +20,17 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
          
-    - name: Publish
-      run: dotnet publish -c Release -r win-x64 --self-contained -o publish
+    - name: Publish (Selfcontained)
+      run: dotnet publish -c Release -r win-x64 --self-contained -o publish-selfcontained
       
-    - name: GitHub Publish - Archive
-      run: powershell Compress-Archive -Path publish\* -DestinationPath DalleMiniViewer.zip
+    - name: Publish (Singlefile)
+      run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true --self-contained false -o publish-singlefile
+            
+    - name: GitHub Publish - Archive (Selfcontained)
+      run: powershell Compress-Archive -Path publish-selfcontained\* -DestinationPath DalleMiniViewer-SelfContained.zip
+      
+    - name: GitHub Publish - Archive (Singlefile)
+      run: powershell Compress-Archive -Path publish-singlefile\* -DestinationPath DalleMiniViewer-SingleFile.zip
       
     - name: GitHub Publish - Release
       uses: softprops/action-gh-release@v1      
@@ -32,5 +38,6 @@ jobs:
         tag_name: ${{ github.workflow }}
         name: Release v${{ github.run_number }}
         draft: false
-        prerelease: false
-        files: DalleMiniViewer.zip
+        prerelease: true
+        files:
+          DalleMiniViewer*.zip
