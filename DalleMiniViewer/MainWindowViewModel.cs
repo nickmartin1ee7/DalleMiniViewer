@@ -16,7 +16,7 @@ namespace DalleMiniViewer
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private const string GENERATE_ENDPOINT = "https://bf.dallemini.ai/generate";
+        private const string GENERATE_ENDPOINT = "https://backend.craiyon.com/generate";
         private readonly HttpClient _client = new();
         private readonly Stopwatch _sw = new();
         private CancellationTokenSource? _cts;
