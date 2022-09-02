@@ -1,5 +1,5 @@
 # DalleMiniViewer
-A small, unofficial desktop client for https://huggingface.co/spaces/dalle-mini/dalle-mini
+A small, unofficial desktop client for https://www.craiyon.com
 
 ## Features
 
